@@ -27,22 +27,24 @@ public class StatementPrinter {
         final StringBuilder result = new StringBuilder("Statement for "
                 + invoice.getCustomer() + System.lineSeparator());
 
-        final NumberFormat frmt = NumberFormat.getCurrencyInstance(Locale.US);
-
         for (Performance p : invoice.getPerformances()) {
 
             // print line for this order
             result.append(String.format(
                     "  %s: %s (%s seats)%n",
                     getPlay(p).getName(),
-                    frmt.format(getAmount(p) / Constants.PERCENT_FACTOR),
+                    NumberFormat.getCurrencyInstance(Locale.US).format(getAmount(p) / Constants.PERCENT_FACTOR),
                     p.getAudience()));
             totalAmount += getAmount(p);
             volumeCredits += getVolumeCredits(p);
         }
-        result.append(String.format("Amount owed is %s%n", frmt.format(totalAmount / Constants.PERCENT_FACTOR)));
+        result.append(String.format("Amount owed is %s%n", usd(totalAmount)));
         result.append(String.format("You earned %s credits%n", volumeCredits));
         return result.toString();
+    }
+
+    private String usd(int cents) {
+        return NumberFormat.getCurrencyInstance(Locale.US).format(cents / Constants.PERCENT_FACTOR);
     }
 
     private int getVolumeCredits(Performance performance) {
@@ -65,7 +67,7 @@ public class StatementPrinter {
                 result = Constants.TRAGEDY_BASE_AMOUNT;
                 if (performance.getAudience() > Constants.TRAGEDY_AUDIENCE_THRESHOLD) {
                     result += Constants.TRAGEDY_OVER_BASE_CAPACITY_PER_PERSON
-                            * (performance.getAudience() - Constants.BASE_VOLUME_CREDIT_THRESHOLD);
+                            * (performance.getAudience() - Constants.TRAGEDY_AUDIENCE_THRESHOLD);
                 }
                 break;
             case "comedy":
